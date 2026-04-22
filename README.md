@@ -2,7 +2,7 @@
 
 Production Airflow DAG repository for the **NNN (National NextGen Network)** Data Engineering team.
 
-This repository contains **50 production-grade DAG files** organised by business domain, plus shared plugin utilities. It is used as a **convention reference** by the DAG Scaffolding Agent: the agent clones this repo, analyses its patterns, and applies the same conventions to every newly generated DAG.
+This repository contains **30 production-grade DAG files** organised by business domain, plus shared plugin utilities. It is used as a **convention reference** by the DAG Scaffolding Agent: the agent clones this repo, analyses its patterns, and applies the same conventions to every newly generated DAG.
 
 ---
 
@@ -11,15 +11,14 @@ This repository contains **50 production-grade DAG files** organised by business
 ```
 nnn_airflow_dags/
 ├── dags/
-│   ├── network/          # Network performance, capacity, outages, traffic
-│   ├── customer/         # RSP activations, service qualification, NPS, CX features
-│   ├── wholesale/        # CVC billing, invoicing, RSP reconciliation
-│   ├── field_ops/        # Technician scheduling, premises activation, FSA reporting
+│   ├── network/          # Network capacity, outages
+│   ├── customer/         # RSP activations, NPS
+│   ├── wholesale/        # RSP reconciliation
 │   ├── finance/          # Revenue recognition, CAPEX tracking
-│   ├── compliance/       # ACCC reporting, SLA compliance
+│   ├── compliance/       # ACCC reporting
 │   ├── infrastructure/   # Node health monitoring, PON splitter audit
-│   ├── redshift/         # Snowflake → S3 → Redshift analytics warehouse loads (10 DAGs)
-│   └── integrations/     # Diverse source/target integration patterns (20 DAGs)
+│   ├── redshift/         # Snowflake → S3 → Redshift analytics warehouse loads (6 DAGs)
+│   └── integrations/     # Diverse source/target integration patterns (14 DAGs)
 └── plugins/
     └── nnn_common/       # Shared callbacks, helpers, and connection constants
         ├── __init__.py
@@ -35,35 +34,21 @@ nnn_airflow_dags/
 
 | DAG File | DAG ID | Schedule (AEST) | SLA | Source(s) | Target(s) |
 |---|---|---|---|---|---|
-| `nnn_network_performance_daily.py` | `nnn_network_performance_daily` | Daily 02:00 | 4 h | NMS REST API | `NETWORK.LINK_PERFORMANCE_DAILY` |
 | `nnn_capacity_utilisation_hourly.py` | `nnn_capacity_utilisation_hourly` | Every :30 | 45 min | Kafka `nnn.network.cvc.metrics` | `NETWORK.CVC_UTILISATION_HOURLY` |
 | `nnn_outage_incident_etl.py` | `nnn_outage_incident_etl` | Every 15 min | — | ServiceNow incidents | `OPERATIONS.OUTAGE_INCIDENTS` |
-| `nnn_poi_traffic_aggregation_weekly.py` | `nnn_poi_traffic_aggregation_weekly` | Monday 03:00 | — | Snowflake rollup | `NETWORK.POI_TRAFFIC_WEEKLY`, S3 CSV |
 
 ### Customer Domain
 
 | DAG File | DAG ID | Schedule (AEST) | SLA | Source(s) | Target(s) |
 |---|---|---|---|---|---|
 | `nnn_rsp_activation_daily.py` | `nnn_rsp_activation_daily` | Daily 01:00 | — | Oracle OSS | `WHOLESALE.RSP_ACTIVATIONS`, Snowflake dynamic table |
-| `nnn_service_qualification_sync.py` | `nnn_service_qualification_sync` | Every 6 h | 1 h | SQ API | Postgres `public.nnn_service_areas`, `CUSTOMER.SQ_SYNC_AUDIT` |
-| `nnn_customer_experience_features.py` | `nnn_customer_experience_features` | Daily 04:00 | — | Snowflake (4 parallel extracts) | `ML.CX_FEATURE_STORE` |
 | `nnn_nps_survey_etl_weekly.py` | `nnn_nps_survey_etl_weekly` | Tuesday 06:00 | — | Medallia API | `CUSTOMER.NPS_RESPONSES` |
 
 ### Wholesale Domain
 
 | DAG File | DAG ID | Schedule (AEST) | SLA | Source(s) | Target(s) |
 |---|---|---|---|---|---|
-| `nnn_cvc_billing_daily.py` | `nnn_cvc_billing_daily` | Daily 05:00 | 4 h (CRITICAL) | Snowflake P95 | `FINANCE.CVC_BILLING_LINES`, Oracle EBS AR staging |
-| `nnn_wholesale_invoice_monthly.py` | `nnn_wholesale_invoice_monthly` | Last day of month 10:00 PM | 8 h | Snowflake CVC/AVC/CSG | Snowflake, Oracle EBS AR, PDF → S3 |
 | `nnn_rsp_reconciliation_weekly.py` | `nnn_rsp_reconciliation_weekly` | Saturday 02:00 | 6 h | Oracle EBS + Salesforce | `WHOLESALE.RSP_RECONCILIATION`, `WHOLESALE.RECON_DISCREPANCIES` |
-
-### Field Operations Domain
-
-| DAG File | DAG ID | Schedule (AEST) | SLA | Source(s) | Target(s) |
-|---|---|---|---|---|---|
-| `nnn_technician_scheduling_daily.py` | `nnn_technician_scheduling_daily` | Daily 03:00 | — | ServiceNow work orders, Snowflake roster | `FIELD_OPS.TECHNICIAN_SCHEDULE`, ServiceNow write-back |
-| `nnn_premises_activation_etl.py` | `nnn_premises_activation_etl` | Daily 01:30 | — | Oracle OSS (incremental watermark), Postgres NI | `INFRASTRUCTURE.PREMISES`, `INFRASTRUCTURE.ROLLOUT_METRICS` |
-| `nnn_fsa_completion_reporting.py` | `nnn_fsa_completion_reporting` | Daily 07:00 | — | ServiceNow FSA | `FIELD_OPS.FSA_PERFORMANCE`, PowerBI dataset refresh |
 
 ### Finance Domain
 
@@ -77,7 +62,6 @@ nnn_airflow_dags/
 | DAG File | DAG ID | Schedule (AEST) | SLA | Source(s) | Target(s) |
 |---|---|---|---|---|---|
 | `nnn_accc_reporting_weekly.py` | `nnn_accc_reporting_weekly` | Thursday 05:00 | 8 h (REGULATORY) | Snowflake multi-schema | `COMPLIANCE.ACCC_METRICS`, S3 JSON + XLSX |
-| `nnn_sla_compliance_daily.py` | `nnn_sla_compliance_daily` | Daily 06:00 | — | Snowflake (SLA breach detection) | `COMPLIANCE.SLA_BREACHES`, CSG credits |
 
 ### Infrastructure Domain
 
@@ -99,20 +83,16 @@ All Redshift DAGs use the **Snowflake UNLOAD → S3 → Redshift COPY** pattern:
 |---|---|---|---|---|---|
 | `nnn_network_performance_redshift_daily.py` | `nnn_network_performance_redshift_daily` | Daily 20:00 | 2 h | `NETWORK.LINK_PERFORMANCE_DAILY` | `analytics.network_performance_daily` |
 | `nnn_cvc_billing_redshift_daily.py` | `nnn_cvc_billing_redshift_daily` | Daily 00:00 | 3 h | `FINANCE.CVC_BILLING_LINES` | `finance.cvc_billing_daily` |
-| `nnn_rsp_activation_redshift_daily.py` | `nnn_rsp_activation_redshift_daily` | Daily 19:00 | 2 h | `WHOLESALE.RSP_ACTIVATIONS` | `wholesale.rsp_activations_daily` |
-| `nnn_customer_cx_redshift_daily.py` | `nnn_customer_cx_redshift_daily` | Daily 00:00 | 2 h | `ML.CX_FEATURE_STORE` | `ml.customer_cx_features` |
 | `nnn_compliance_breach_redshift_daily.py` | `nnn_compliance_breach_redshift_daily` | Daily 01:00 | 2 h | `COMPLIANCE.SLA_BREACHES` | `compliance.sla_breaches_daily` |
 | `nnn_infrastructure_health_redshift_hourly.py` | `nnn_infrastructure_health_redshift_hourly` | Every :20 | 30 min | `NETWORK.NODE_HEALTH_HOURLY` | `analytics.node_health_hourly` |
 | `nnn_capex_tracking_redshift_weekly.py` | `nnn_capex_tracking_redshift_weekly` | Sunday 19:00 | 4 h | `FINANCE.CAPEX_TRACKING` | `finance.capex_tracking_weekly` |
-| `nnn_nps_sentiment_redshift_weekly.py` | `nnn_nps_sentiment_redshift_weekly` | Wednesday 22:00 | 3 h | `CUSTOMER.NPS_RESPONSES` | `customer.nps_sentiment_weekly` |
 | `nnn_poi_capacity_redshift_weekly.py` | `nnn_poi_capacity_redshift_weekly` | Monday 20:00 | 4 h | `NETWORK.POI_TRAFFIC_WEEKLY` | `analytics.poi_capacity_weekly` |
-| `nnn_accc_regulatory_redshift_weekly.py` | `nnn_accc_regulatory_redshift_weekly` | Thursday 22:00 | 4 h | `COMPLIANCE.ACCC_METRICS` | `regulatory.accc_metrics_weekly` |
 
 ---
 
 ### Integrations Domain (Diverse Source & Target Patterns)
 
-These 20 DAGs demonstrate the full breadth of integration patterns, covering every major source and target system type used by NNN.
+These 14 DAGs demonstrate the full breadth of integration patterns, covering every major source and target system type used by NNN.
 
 #### Ingest to Snowflake / Redshift
 
@@ -120,17 +100,12 @@ These 20 DAGs demonstrate the full breadth of integration patterns, covering eve
 |---|---|---|---|---|---|
 | `nnn_sftp_rsp_billing_ingest_daily.py` | `nnn_sftp_rsp_billing_ingest_daily` | Daily 18:00 | 2 h | SFTP CSV files | `WHOLESALE.RSP_BILLING_STATEMENTS` |
 | `nnn_mongodb_noc_incidents_sync_hourly.py` | `nnn_mongodb_noc_incidents_sync_hourly` | Every :05 | 30 min | MongoDB `noc_tools.incidents` | `OPERATIONS.NOC_INCIDENTS` |
-| `nnn_elasticsearch_fault_logs_daily.py` | `nnn_elasticsearch_fault_logs_daily` | Daily 01:00 | 90 min | Elasticsearch `nnn-fault-logs-*` | `OPERATIONS.FAULT_LOG_SUMMARY` |
-| `nnn_dynamodb_portal_sessions_daily.py` | `nnn_dynamodb_portal_sessions_daily` | Daily 02:00 | 1 h | AWS DynamoDB `nnn-rsp-portal-sessions` | Redshift `analytics.rsp_portal_sessions` |
 | `nnn_kinesis_clickstream_hourly.py` | `nnn_kinesis_clickstream_hourly` | Every :45 | 45 min | AWS Kinesis `nnn-rsp-portal-clickstream` | `ML.RSP_PORTAL_CLICKSTREAM` |
-| `nnn_sqs_provisioning_events_15min.py` | `nnn_sqs_provisioning_events_15min` | Every 15 min | — | AWS SQS `nnn-provisioning-events` | `OPERATIONS.PROVISIONING_EVENTS` |
 | `nnn_mqtt_basestation_telemetry_hourly.py` | `nnn_mqtt_basestation_telemetry_hourly` | Every :15 | 30 min | MQTT → Firehose → S3 | `NETWORK.FW_BASESTATION_TELEMETRY` |
 | `nnn_soap_mediation_cdr_daily.py` | `nnn_soap_mediation_cdr_daily` | Daily 03:00 | 3 h | SOAP/XML mediation CDR API | `NETWORK.MEDIATION_CDR` |
 | `nnn_graphql_partner_portal_daily.py` | `nnn_graphql_partner_portal_daily` | Daily 04:00 | 2 h | GraphQL partner portal API | `WHOLESALE.PARTNER_PORTAL_ACTIVITY` |
 | `nnn_mssql_legacy_billing_daily.py` | `nnn_mssql_legacy_billing_daily` | Daily 05:00 | 2 h | MS SQL Server legacy billing | `FINANCE.LEGACY_BILLING_RECORDS` |
-| `nnn_azure_blob_partner_data_daily.py` | `nnn_azure_blob_partner_data_daily` | Daily 10:00 | 2 h | Azure Blob Storage `partner-data-drops` | `WHOLESALE.PARTNER_DATA_INGEST` |
 | `nnn_rabbitmq_order_events_15min.py` | `nnn_rabbitmq_order_events_15min` | Every 15 min | — | RabbitMQ `nnn.orders.provisioned` | `OPERATIONS.ORDER_EVENTS` |
-| `nnn_imap_rsp_report_weekly.py` | `nnn_imap_rsp_report_weekly` | Monday 11:00 | 4 h | IMAP email `.xlsx` attachments | `WHOLESALE.RSP_MANUAL_REPORTS` |
 | `nnn_redis_session_analytics_daily.py` | `nnn_redis_session_analytics_daily` | Daily 13:00 | 1 h | Redis `session:*` hash keys | `ML.RSP_SESSION_ANALYTICS` |
 
 #### Export from Snowflake to External Systems
@@ -138,7 +113,6 @@ These 20 DAGs demonstrate the full breadth of integration patterns, covering eve
 | DAG File | DAG ID | Schedule | SLA | Source | Target |
 |---|---|---|---|---|---|
 | `nnn_snowflake_to_dynamodb_cache_daily.py` | `nnn_snowflake_to_dynamodb_cache_daily` | Daily 06:00 | 1 h | `CUSTOMER.SERVICE_ELIGIBILITY_CURRENT` | DynamoDB `nnn-rsp-portal-cache` |
-| `nnn_snowflake_to_elasticsearch_daily.py` | `nnn_snowflake_to_elasticsearch_daily` | Daily 07:00 | 2 h | `CUSTOMER.SERVICE_AVAILABILITY_CURRENT` | Elasticsearch `nnn-service-availability` |
 | `nnn_snowflake_to_rds_postgres_daily.py` | `nnn_snowflake_to_rds_postgres_daily` | Daily 08:00 | 1 h | `OPERATIONS.DAILY_NETWORK_HEALTH_SUMMARY` | RDS Postgres `operational_reporting.network_health_daily` |
 | `nnn_s3_to_glue_catalog_daily.py` | `nnn_s3_to_glue_catalog_daily` | Daily 09:00 | 1 h | S3 data lake new partitions | AWS Glue Data Catalog |
 | `nnn_snowflake_to_gcs_regulatory_weekly.py` | `nnn_snowflake_to_gcs_regulatory_weekly` | Wednesday 20:00 | 3 h | `COMPLIANCE.WEEKLY_REGULATORY_EXPORT` | GCS `nnn-accc-regulatory-{env}` |
