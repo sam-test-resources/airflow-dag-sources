@@ -2,7 +2,7 @@
 
 Production Airflow DAG repository for the **NNN (National NextGen Network)** Data Engineering team.
 
-This repository contains **30 production-grade DAG files** organised by business domain, plus shared plugin utilities. It is used as a **convention reference** by the DAG Scaffolding Agent: the agent clones this repo, analyses its patterns, and applies the same conventions to every newly generated DAG.
+This repository contains **20 production-grade DAG files** organised by business domain, plus shared plugin utilities. It is used as a **convention reference** by the DAG Scaffolding Agent: the agent clones this repo, analyses its patterns, and applies the same conventions to every newly generated DAG.
 
 ---
 
@@ -17,8 +17,8 @@ nnn_airflow_dags/
 │   ├── finance/          # Revenue recognition, CAPEX tracking
 │   ├── compliance/       # ACCC reporting
 │   ├── infrastructure/   # Node health monitoring, PON splitter audit
-│   ├── redshift/         # Snowflake → S3 → Redshift analytics warehouse loads (6 DAGs)
-│   └── integrations/     # Diverse source/target integration patterns (14 DAGs)
+│   ├── redshift/         # Snowflake → S3 → Redshift analytics warehouse loads (3 DAGs)
+│   └── integrations/     # Diverse source/target integration patterns (7 DAGs)
 └── plugins/
     └── nnn_common/       # Shared callbacks, helpers, and connection constants
         ├── __init__.py
@@ -83,39 +83,29 @@ All Redshift DAGs use the **Snowflake UNLOAD → S3 → Redshift COPY** pattern:
 |---|---|---|---|---|---|
 | `nnn_network_performance_redshift_daily.py` | `nnn_network_performance_redshift_daily` | Daily 20:00 | 2 h | `NETWORK.LINK_PERFORMANCE_DAILY` | `analytics.network_performance_daily` |
 | `nnn_cvc_billing_redshift_daily.py` | `nnn_cvc_billing_redshift_daily` | Daily 00:00 | 3 h | `FINANCE.CVC_BILLING_LINES` | `finance.cvc_billing_daily` |
-| `nnn_compliance_breach_redshift_daily.py` | `nnn_compliance_breach_redshift_daily` | Daily 01:00 | 2 h | `COMPLIANCE.SLA_BREACHES` | `compliance.sla_breaches_daily` |
-| `nnn_infrastructure_health_redshift_hourly.py` | `nnn_infrastructure_health_redshift_hourly` | Every :20 | 30 min | `NETWORK.NODE_HEALTH_HOURLY` | `analytics.node_health_hourly` |
 | `nnn_capex_tracking_redshift_weekly.py` | `nnn_capex_tracking_redshift_weekly` | Sunday 19:00 | 4 h | `FINANCE.CAPEX_TRACKING` | `finance.capex_tracking_weekly` |
-| `nnn_poi_capacity_redshift_weekly.py` | `nnn_poi_capacity_redshift_weekly` | Monday 20:00 | 4 h | `NETWORK.POI_TRAFFIC_WEEKLY` | `analytics.poi_capacity_weekly` |
 
 ---
 
 ### Integrations Domain (Diverse Source & Target Patterns)
 
-These 14 DAGs demonstrate the full breadth of integration patterns, covering every major source and target system type used by NNN.
+These 7 DAGs demonstrate the breadth of integration patterns, covering distinct source/target system types and schedule frequencies used by NNN.
 
 #### Ingest to Snowflake / Redshift
 
 | DAG File | DAG ID | Schedule | SLA | Source | Target |
 |---|---|---|---|---|---|
-| `nnn_sftp_rsp_billing_ingest_daily.py` | `nnn_sftp_rsp_billing_ingest_daily` | Daily 18:00 | 2 h | SFTP CSV files | `WHOLESALE.RSP_BILLING_STATEMENTS` |
-| `nnn_mongodb_noc_incidents_sync_hourly.py` | `nnn_mongodb_noc_incidents_sync_hourly` | Every :05 | 30 min | MongoDB `noc_tools.incidents` | `OPERATIONS.NOC_INCIDENTS` |
+| `nnn_rabbitmq_order_events_15min.py` | `nnn_rabbitmq_order_events_15min` | Every 15 min | — | RabbitMQ `nnn.orders.provisioned` | `OPERATIONS.ORDER_EVENTS` |
 | `nnn_kinesis_clickstream_hourly.py` | `nnn_kinesis_clickstream_hourly` | Every :45 | 45 min | AWS Kinesis `nnn-rsp-portal-clickstream` | `ML.RSP_PORTAL_CLICKSTREAM` |
 | `nnn_mqtt_basestation_telemetry_hourly.py` | `nnn_mqtt_basestation_telemetry_hourly` | Every :15 | 30 min | MQTT → Firehose → S3 | `NETWORK.FW_BASESTATION_TELEMETRY` |
-| `nnn_soap_mediation_cdr_daily.py` | `nnn_soap_mediation_cdr_daily` | Daily 03:00 | 3 h | SOAP/XML mediation CDR API | `NETWORK.MEDIATION_CDR` |
-| `nnn_graphql_partner_portal_daily.py` | `nnn_graphql_partner_portal_daily` | Daily 04:00 | 2 h | GraphQL partner portal API | `WHOLESALE.PARTNER_PORTAL_ACTIVITY` |
+| `nnn_mongodb_noc_incidents_sync_hourly.py` | `nnn_mongodb_noc_incidents_sync_hourly` | Every :05 | 30 min | MongoDB `noc_tools.incidents` | `OPERATIONS.NOC_INCIDENTS` |
 | `nnn_mssql_legacy_billing_daily.py` | `nnn_mssql_legacy_billing_daily` | Daily 05:00 | 2 h | MS SQL Server legacy billing | `FINANCE.LEGACY_BILLING_RECORDS` |
-| `nnn_rabbitmq_order_events_15min.py` | `nnn_rabbitmq_order_events_15min` | Every 15 min | — | RabbitMQ `nnn.orders.provisioned` | `OPERATIONS.ORDER_EVENTS` |
-| `nnn_redis_session_analytics_daily.py` | `nnn_redis_session_analytics_daily` | Daily 13:00 | 1 h | Redis `session:*` hash keys | `ML.RSP_SESSION_ANALYTICS` |
+| `nnn_sftp_rsp_billing_ingest_daily.py` | `nnn_sftp_rsp_billing_ingest_daily` | Daily 18:00 | 2 h | SFTP CSV files | `WHOLESALE.RSP_BILLING_STATEMENTS` |
 
 #### Export from Snowflake to External Systems
 
 | DAG File | DAG ID | Schedule | SLA | Source | Target |
 |---|---|---|---|---|---|
-| `nnn_snowflake_to_dynamodb_cache_daily.py` | `nnn_snowflake_to_dynamodb_cache_daily` | Daily 06:00 | 1 h | `CUSTOMER.SERVICE_ELIGIBILITY_CURRENT` | DynamoDB `nnn-rsp-portal-cache` |
-| `nnn_snowflake_to_rds_postgres_daily.py` | `nnn_snowflake_to_rds_postgres_daily` | Daily 08:00 | 1 h | `OPERATIONS.DAILY_NETWORK_HEALTH_SUMMARY` | RDS Postgres `operational_reporting.network_health_daily` |
-| `nnn_s3_to_glue_catalog_daily.py` | `nnn_s3_to_glue_catalog_daily` | Daily 09:00 | 1 h | S3 data lake new partitions | AWS Glue Data Catalog |
-| `nnn_snowflake_to_gcs_regulatory_weekly.py` | `nnn_snowflake_to_gcs_regulatory_weekly` | Wednesday 20:00 | 3 h | `COMPLIANCE.WEEKLY_REGULATORY_EXPORT` | GCS `nnn-accc-regulatory-{env}` |
 | `nnn_snowflake_to_s3_ml_export_daily.py` | `nnn_snowflake_to_s3_ml_export_daily` | Daily 12:00 | 2 h | `ML.CUSTOMER_FEATURES`, `ML.NETWORK_FEATURES`, `ML.CHURN_LABELS` | S3 Parquet + ML training trigger |
 
 ---
