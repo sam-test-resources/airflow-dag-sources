@@ -203,9 +203,7 @@ Snowflake
     └── FIELD_OPS.SERVICENOW_WORK_ORDERS
     │
     ▼  [Downstream consumers]
-    ├── nnn_accc_reporting_weekly (reads COMPLIANCE.SERVICENOW_INCIDENTS + TASK_SLAS)
-    ├── nnn_sla_compliance_daily (reads SERVICENOW_TASK_SLAS for SLA breach monitoring)
-    └── nnn_fsa_completion_reporting (reads FIELD_OPS.SERVICENOW_WORK_ORDERS)
+    └── nnn_accc_reporting_weekly (reads COMPLIANCE.SERVICENOW_INCIDENTS + TASK_SLAS)
 ```
 
 ---

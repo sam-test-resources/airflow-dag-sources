@@ -216,7 +216,6 @@ Snowflake
     ▼  [Downstream consumers]
     ├── nnn_node_health_monitoring_hourly (joins SAP_NETWORK_ASSETS via poi_id)
     ├── nnn_capex_project_tracking_weekly (joins SAP_PROCUREMENT_ORDERS via oracle_project_code)
-    ├── nnn_technician_scheduling_daily (reads SAP_WORKFORCE_MASTER for capacity inputs)
     └── INFRASTRUCTURE.V_ASSET_HEALTH_COMBINED (new view — see Section 7)
 ```
 

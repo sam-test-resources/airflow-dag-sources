@@ -198,7 +198,6 @@ Snowflake CUSTOMER Schema
     └── MEDALLIA_NPS_DAILY
     │
     ▼  [Downstream consumers]
-    ├── nnn_customer_experience_features (adds topic sentiment scores as ML features)
     ├── nnn_nps_survey_etl_weekly (deprecated after go-live — replaced by MEDALLIA_NPS_DAILY)
     └── CUSTOMER.V_CX_FAULT_CORRELATION (new view — see Section 7)
 ```
@@ -260,7 +259,7 @@ to measure whether fault resolution quality predicts CX satisfaction.
 | `overall_satisfaction_score` | |
 | `rsp_code` | |
 
-This view is the primary input for the `nnn_customer_experience_features` ML feature pipeline.
+This view is the primary input for downstream ML feature engineering pipelines that require joined CX and incident data.
 
 ---
 

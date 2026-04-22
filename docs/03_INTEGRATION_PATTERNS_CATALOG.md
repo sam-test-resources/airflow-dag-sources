@@ -80,7 +80,7 @@ Download → local `/tmp/` → `upload_to_s3()` → Snowflake `COPY INTO ... FRO
 
 ## 2. REST API (HTTP/S)
 
-**Reference DAGs:** `nnn_network_performance_daily.py`, `nnn_graphql_partner_portal_daily.py`  
+**Reference DAG:** `nnn_outage_incident_etl.py`  
 **Provider package:** `apache-airflow-providers-http`
 
 ### Key hook
@@ -128,7 +128,7 @@ The `HttpHook` reads `host`, `schema`, and the `extra` JSON as default headers.
 
 ## 3. GraphQL API
 
-**Reference DAG:** `dags/integrations/nnn_graphql_partner_portal_daily.py`  
+**Reference DAG:** *(no current sample DAG — pattern remains applicable)*  
 **Provider package:** `apache-airflow-providers-http`
 
 ### Key pattern
@@ -185,7 +185,7 @@ def fetch_from_graphql(**context) -> None:
 
 ## 4. SOAP / XML API
 
-**Reference DAG:** `dags/integrations/nnn_soap_mediation_cdr_daily.py`  
+**Reference DAG:** *(no current sample DAG — pattern remains applicable)*  
 **Provider package:** `apache-airflow-providers-http` (send raw XML via HttpHook)
 
 ### Key pattern
@@ -296,7 +296,7 @@ for r in records:
 
 ## 6. Elasticsearch (read)
 
-**Reference DAG:** `dags/integrations/nnn_elasticsearch_fault_logs_daily.py`  
+**Reference DAG:** *(no current sample DAG — pattern remains applicable)*  
 **Provider package:** `apache-airflow-providers-elasticsearch`  
 **Additional package:** `elasticsearch>=8.0`
 
@@ -350,7 +350,7 @@ es_client.clear_scroll(scroll_id=scroll_id)
 
 ## 7. AWS DynamoDB (read)
 
-**Reference DAG:** `dags/integrations/nnn_dynamodb_portal_sessions_daily.py`  
+**Reference DAG:** *(no current sample DAG — pattern remains applicable)*  
 **Provider package:** `apache-airflow-providers-amazon`
 
 ### Key pattern — paginated Scan with FilterExpression
@@ -457,7 +457,7 @@ for shard in shards:
 
 ## 9. AWS SQS
 
-**Reference DAG:** `dags/integrations/nnn_sqs_provisioning_events_15min.py`  
+**Reference DAG:** *(no current sample DAG — pattern remains applicable)*  
 **Provider package:** `apache-airflow-providers-amazon`
 
 ### Key pattern — receive + delete loop
@@ -585,7 +585,7 @@ finally:
 
 ## 12. Redis Cache Scan
 
-**Reference DAG:** `dags/integrations/nnn_redis_session_analytics_daily.py`  
+**Reference DAG:** *(no current sample DAG — pattern remains applicable)*  
 **Provider package:** `apache-airflow-providers-redis`
 
 ### Key pattern — scan_iter + HGETALL
@@ -618,7 +618,7 @@ finally:
 
 ## 13. IMAP Email + Attachment
 
-**Reference DAG:** `dags/integrations/nnn_imap_rsp_report_weekly.py`  
+**Reference DAG:** *(no current sample DAG — pattern remains applicable)*  
 **Provider package:** `apache-airflow-providers-imap`
 
 ### Key pattern — search + fetch + download attachment
@@ -660,7 +660,7 @@ hook.mail.logout()
 
 ## 14. Azure Blob Storage
 
-**Reference DAG:** `dags/integrations/nnn_azure_blob_partner_data_daily.py`  
+**Reference DAG:** *(no current sample DAG — pattern remains applicable)*  
 **Provider package:** `apache-airflow-providers-microsoft-azure`
 
 ### Key hooks
@@ -776,7 +776,7 @@ Define one PythonOperator per table; use `[t_a, t_b, t_c] >> t_trigger` dependen
 
 ## 17. Snowflake → Redshift (via S3)
 
-**Reference DAGs:** All 10 DAGs in `dags/redshift/`  
+**Reference DAGs:** All 3 DAGs in `dags/redshift/`  
 **Pattern:** Snowflake UNLOAD → S3 → Redshift COPY
 
 ### Standard 3-task pattern
@@ -829,7 +829,7 @@ def validate(**context) -> None:
 
 ## 18. Snowflake → AWS DynamoDB
 
-**Reference DAG:** `dags/integrations/nnn_snowflake_to_dynamodb_cache_daily.py`  
+**Reference DAG:** *(no current sample DAG — pattern remains applicable)*  
 **Provider package:** `apache-airflow-providers-amazon`
 
 ### Key pattern — batch_writer
@@ -859,7 +859,7 @@ for i in range(0, len(records), BATCH_SIZE):
 
 ## 19. Snowflake → Elasticsearch
 
-**Reference DAG:** `dags/integrations/nnn_snowflake_to_elasticsearch_daily.py`  
+**Reference DAG:** *(no current sample DAG — pattern remains applicable)*  
 **Provider package:** `apache-airflow-providers-elasticsearch`  
 **Additional:** `elasticsearch>=8.0`
 
@@ -892,7 +892,7 @@ es_client.indices.refresh(index="nnn-service-availability")
 
 ## 20. Snowflake → RDS PostgreSQL
 
-**Reference DAG:** `dags/integrations/nnn_snowflake_to_rds_postgres_daily.py`  
+**Reference DAG:** *(no current sample DAG — pattern remains applicable)*  
 **Provider package:** `apache-airflow-providers-postgres`
 
 ### Key pattern — export to temp file → DELETE + insert_rows
@@ -923,7 +923,7 @@ for i in range(0, len(records), 1_000):
 
 ## 21. Snowflake → Google Cloud Storage
 
-**Reference DAG:** `dags/integrations/nnn_snowflake_to_gcs_regulatory_weekly.py`  
+**Reference DAG:** *(no current sample DAG — pattern remains applicable)*  
 **Provider package:** `apache-airflow-providers-google`
 
 ### Key pattern
@@ -951,7 +951,7 @@ The `CONN_GCS` connection uses **Google Cloud** type. Set the Keyfile JSON field
 
 ## 22. S3 → AWS Glue Data Catalog
 
-**Reference DAG:** `dags/integrations/nnn_s3_to_glue_catalog_daily.py`  
+**Reference DAG:** *(no current sample DAG — pattern remains applicable)*  
 **Provider package:** `apache-airflow-providers-amazon`
 
 ### Key pattern — batch_create_partition

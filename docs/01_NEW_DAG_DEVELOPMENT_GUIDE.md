@@ -195,39 +195,25 @@ with DAG(
 
 | Source system | Pattern | Example DAG to copy |
 |---|---|---|
-| REST API (HTTP/S) | `HttpHook` inside PythonOperator | `nnn_network_performance_daily.py` |
+| REST API (HTTP/S) | `HttpHook` inside PythonOperator | `nnn_outage_incident_etl.py` |
 | SFTP / SSH file drop | `SSHHook` + sftp method | `nnn_sftp_rsp_billing_ingest_daily.py` |
 | MongoDB | `MongoHook` | `nnn_mongodb_noc_incidents_sync_hourly.py` |
-| Elasticsearch (read) | `ElasticsearchPythonHook` | `nnn_elasticsearch_fault_logs_daily.py` |
-| AWS DynamoDB (read) | `DynamoDBHook` paginator | `nnn_dynamodb_portal_sessions_daily.py` |
 | AWS Kinesis Data Stream | `AwsBaseHook` + kinesis client | `nnn_kinesis_clickstream_hourly.py` |
-| AWS SQS | `SqsHook` | `nnn_sqs_provisioning_events_15min.py` |
 | MQTT (IoT) | S3 sensor + PythonOperator | `nnn_mqtt_basestation_telemetry_hourly.py` |
-| SOAP/XML API | `HttpHook` + xml.etree | `nnn_soap_mediation_cdr_daily.py` |
-| GraphQL API | `HttpHook` + JSON body | `nnn_graphql_partner_portal_daily.py` |
 | MS SQL Server | `get_mssql_hook()` | `nnn_mssql_legacy_billing_daily.py` |
 | RabbitMQ | `RabbitMQHook` + pika | `nnn_rabbitmq_order_events_15min.py` |
-| IMAP email + attachment | `ImapHook` | `nnn_imap_rsp_report_weekly.py` |
-| Redis cache | `RedisHook` + scan_iter | `nnn_redis_session_analytics_daily.py` |
-| Azure Blob Storage | `WasbHook` | `nnn_azure_blob_partner_data_daily.py` |
 | Kafka | `confluent_kafka.Consumer` | `nnn_capacity_utilisation_hourly.py` |
-| Oracle EBS/OSS | `OracleHook` | `nnn_cvc_billing_daily.py` |
-| Snowflake (source) | `get_snowflake_hook()` | `nnn_snowflake_to_rds_postgres_daily.py` |
+| Oracle EBS/OSS | `OracleHook` | `nnn_rsp_activation_daily.py` |
+| Snowflake (source) | `get_snowflake_hook()` | `nnn_snowflake_to_s3_ml_export_daily.py` |
 
 ### Target system → pattern
 
 | Target system | Pattern | Example DAG |
 |---|---|---|
 | Snowflake (INSERT/MERGE) | `get_snowflake_hook().get_conn()` + explicit cursor | `nnn_sftp_rsp_billing_ingest_daily.py` |
-| Snowflake (COPY from S3) | `snowflake_run()` with COPY INTO | `nnn_azure_blob_partner_data_daily.py` |
+| Snowflake (COPY from S3) | `snowflake_run()` with COPY INTO | `nnn_sftp_rsp_billing_ingest_daily.py` |
 | Redshift (COPY from S3) | `snowflake_unload_to_s3()` → `redshift_copy_from_s3()` | `nnn_network_performance_redshift_daily.py` |
-| Redshift (direct insert) | `redshift_copy_from_s3()` | `nnn_dynamodb_portal_sessions_daily.py` |
 | S3 (export) | `upload_to_s3()` or `snowflake_unload_to_s3()` | `nnn_snowflake_to_s3_ml_export_daily.py` |
-| DynamoDB (write) | `AwsBaseHook` resource + `batch_writer()` | `nnn_snowflake_to_dynamodb_cache_daily.py` |
-| Elasticsearch (index) | `ElasticsearchPythonHook` + `bulk()` | `nnn_snowflake_to_elasticsearch_daily.py` |
-| RDS PostgreSQL | `PostgresHook` | `nnn_snowflake_to_rds_postgres_daily.py` |
-| GCS | `GCSHook` | `nnn_snowflake_to_gcs_regulatory_weekly.py` |
-| AWS Glue Catalog | `AwsBaseHook` + glue client | `nnn_s3_to_glue_catalog_daily.py` |
 
 ### Frequency → schedule and retry settings
 

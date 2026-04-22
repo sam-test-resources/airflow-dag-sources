@@ -245,7 +245,7 @@ the same window updates existing rows and inserts any missed new rows — never 
 | **Retries** | 3 attempts, 10-minute delay between retries |
 | **SLA miss behaviour** | `nnn_sla_miss_alert` fires PagerDuty `error` (P2) |
 | **Dependency** | None — this DAG is a source DAG; no upstream Airflow dependency |
-| **Downstream trigger** | On success, signals readiness for `nnn_customer_experience_features` DAG |
+| **Downstream trigger** | On success, signals readiness for downstream ML feature pipelines that consume `CUSTOMER.SF_CASES` |
 
 ---
 
